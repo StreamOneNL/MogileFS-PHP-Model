@@ -14,6 +14,5 @@
     },
     "autoload": {
         "psr-0": { "MogileFS": "src/" }
-    },
-    "minimum-stability": "dev"
+    }
 }
