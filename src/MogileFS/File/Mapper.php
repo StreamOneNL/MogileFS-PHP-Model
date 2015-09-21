@@ -64,6 +64,10 @@ class MogileFS_File_Mapper
 			$default = (isset($options['defaultadapter'])) ? $options['defaultadapter']
 					: 'MogileFS_File_Mapper_Adapter_Tracker';
 
+			if (isset($options['progress_callback'])) {
+				$options['adapter']['progress_callback'] = $options['progress_callback'];
+			}
+
 			$this->setAdapter(new $default($options['adapter']));
 		}
 		return $this->_adapter;
@@ -138,8 +142,35 @@ class MogileFS_File_Mapper
 		$paths = $file->getPaths();
 		$url = reset($paths);
 
+		$options = $this->getOptions();
+
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_FILE, $fp);
+		if (isset($options['progress_callback']) && is_callable($options['progress_callback'])) {
+			$callback = function($curl_handle, $total_download, $current_download, 
+				$total_upload, $current_upload) use ($options)
+			{
+				return call_user_func($options['progress_callback'], $total_download,
+					$current_download, $total_upload, $current_upload);
+			};
+		
+			// For pre-5.5 PHP versions, the progress function does not get the curl handle as the
+			// first argument
+			if ((PHP_MAJOR_VERSION === 5) && (PHP_MINOR_VERSION < 5))
+			{
+				$callback = function($total_download, $current_download, $total_upload,
+					$current_upload) use ($options)
+				{
+					return call_user_func($options['progress_callback'], $total_download,
+						$current_download, $total_upload, $current_upload);
+				};
+			}
+
+			curl_setopt_array($ch, array(
+				CURLOPT_NOPROGRESS => false,
+				CURLOPT_PROGRESSFUNCTION => $callback,
+			));
+		}
 		$response = curl_exec($ch);
 
 		// Check for errors

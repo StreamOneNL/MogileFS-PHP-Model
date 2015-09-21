@@ -38,6 +38,23 @@ class MapperTest extends PHPUnit_Framework_TestCase
 		$this->assertNull($this->_testMapper->find($key));
 	}
 
+	public function testSaveAndDeleteProgress()
+	{
+		$overall_upload = 0;
+		$options = $this->_testMapper->getOptions();
+		$options['progress_callback'] = function($total_download, $current_download, $total_upload, $current_upload)
+			use (&$overall_upload) {
+			$overall_upload = max($overall_upload, $total_upload);
+		};
+		$this->_testMapper->setOptions($options);
+		$savedFile = $this->_testMapper->save($this->_testFile);
+		
+		$this->assertGreaterThan(0, $overall_upload);
+
+		$key = $this->_testFile->getKey();
+		$this->_testMapper->delete($key);
+	}
+
 	public function testFindAndFetchAll()
 	{
 		$savedFile = $this->_testMapper->save($this->_testFile);
@@ -80,6 +97,27 @@ class MapperTest extends PHPUnit_Framework_TestCase
 		$savedFile = $this->_testMapper->save($this->_testFile);
 		$this->assertFileExists($this->_testFile->getFile(true));
 		$this->assertGreaterThan(0, filesize($this->_testFile->getFile()));
+	}
+
+	public function testFetchFileProgress()
+	{
+		$overall_download = 0;
+		$options = $this->_testMapper->getOptions();
+		$options['progress_callback'] = function($total_download, $current_download, $total_upload, $current_upload)
+			use (&$overall_download) {
+			$overall_download = max($overall_download, $total_download);
+		};
+		$this->_testMapper->setOptions($options);
+
+		$this->_testFile->setMapper($this->_testMapper);
+		$savedFile = $this->_testMapper->save($this->_testFile);
+
+		$overall_download = 0;
+
+		$this->assertFileExists($this->_testFile->getFile(true));
+		$this->assertGreaterThan(0, filesize($this->_testFile->getFile()));
+
+		$this->assertGreaterThan(0, $overall_download);
 	}
 
 	public function testGetAdapter()
