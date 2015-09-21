@@ -52,6 +52,13 @@ class MogileFS_File
 
 	/**
 	 * 
+	 * MD5 (checksum) of file
+	 * @var string
+	 */
+	protected $_md5;
+
+	/**
+	 * 
 	 * List of URIs to location of file within MogileFS - read only
 	 * @var array of string
 	 */
@@ -80,7 +87,7 @@ class MogileFS_File
 	{
 		return array('class' => $this->getClass(), 'domain' => $this->getDomain(), 'fid' => $this->getFid(),
 				'file' => $this->getFile(false), 'key' => $this->getKey(), 'paths' => $this->getPaths(),
-				'size' => $this->getSize()
+				'size' => $this->getSize(), 'md5' => $this->getMd5(),
 		);
 	}
 
@@ -108,6 +115,9 @@ class MogileFS_File
 					break;
 				case 'size':
 					$this->setSize($value);
+					break;
+				case 'md5':
+					$this->setMd5($value);
 					break;
 			}
 		}
@@ -258,6 +268,32 @@ class MogileFS_File
 			$this->getMapper()->findInfo($this);
 		}
 		return $this->_size;
+	}
+
+	/**
+	 * 
+	 * @return string
+	 */
+	public function getMd5($forceFetch = null)
+	{
+		if ((true === $forceFetch) || (null === $forceFetch && null === $this->_md5)) {
+			if (!$this->getMapper() instanceof MogileFS_File_Mapper) {
+				throw new MogileFS_Exception(__METHOD__ . ' No mapper set', MogileFS_Exception::MISSING_MAPPER);
+			}
+			$this->getMapper()->findInfo($this);
+		}
+		return $this->_md5;
+	}
+
+	/**
+	 * 
+	 * @param string $md5
+	 * @return MogileFS_File Provides fluent interface
+	 */
+	public function setMd5($md5)
+	{
+		$this->_md5 = $md5;
+		return $this;
 	}
 
 	public function setMapper(MogileFS_File_Mapper $mapper)

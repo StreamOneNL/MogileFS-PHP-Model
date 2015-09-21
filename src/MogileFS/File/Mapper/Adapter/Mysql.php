@@ -93,7 +93,7 @@ class MogileFS_File_Mapper_Adapter_Mysql extends MogileFS_File_Mapper_Adapter_Ab
 		throw new MogileFS_Exception(__METHOD__ . ' Not supported', MogileFS_Exception::UNSUPPORTED_METHOD);
 	}
 
-	public function saveFile($key, $file, $class = null)
+	public function saveFile($key, $file, $md5 = null, $class = null)
 	{
 		throw new MogileFS_Exception(__METHOD__ . ' Not supported', MogileFS_Exception::UNSUPPORTED_METHOD);
 	}

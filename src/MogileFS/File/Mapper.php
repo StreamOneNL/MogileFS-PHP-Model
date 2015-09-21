@@ -179,7 +179,7 @@ class MogileFS_File_Mapper
 		$file->setMapper($this);
 		$adapter = $this->getAdapter();
 		try {
-			$adapter->saveFile($file->getKey(), $file->getFile(false), $file->getClass(false));
+			$adapter->saveFile($file->getKey(), $file->getFile(false), $file->getMd5(false), $file->getClass(false));
 		} catch (MogileFS_Exception $e) {
 			switch ($e->getCode()) {
 				case MogileFS_Exception::TRACKER_ERROR:

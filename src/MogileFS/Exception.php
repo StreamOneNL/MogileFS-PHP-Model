@@ -25,5 +25,6 @@ class MogileFS_Exception extends Exception
 	const FILE_NOT_FOUND = 158;
 	const TRACKER_ERROR = 159;
 	const SERVER_ERROR = 160;
+	const CHECKSUM_ERROR = 161;
 	const UNKNOWN_ERROR = 199;
 }

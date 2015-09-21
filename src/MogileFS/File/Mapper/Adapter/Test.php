@@ -64,7 +64,7 @@ class MogileFS_File_Mapper_Adapter_Test extends MogileFS_File_Mapper_Adapter_Abs
 		return $keysToReturn;
 	}
 
-	public function saveFile($key, $file, $class = null)
+	public function saveFile($key, $file, $md5 = null, $class = null)
 	{
 		$options = $this->getOptions();
 		if (!isset($options['domain'])) {
@@ -73,7 +73,7 @@ class MogileFS_File_Mapper_Adapter_Test extends MogileFS_File_Mapper_Adapter_Abs
 		}
 
 		$fid = rand(0, 1000);
-		$this->_saveResult[$key] = array('fid' => $fid, 'key' => $key, 'size' => 123,
+		$this->_saveResult[$key] = array('fid' => $fid, 'key' => $key, 'size' => 123, 'md5' => $md5,
 				'paths' => array('file://' . $file), 'domain' => $options['domain'],
 				'class' => (null === $class) ? 'default' : $class
 		);

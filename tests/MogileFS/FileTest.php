@@ -31,6 +31,7 @@ class FileTest extends PHPUnit_Framework_TestCase
 		$this->assertInstanceOf('MogileFS_File', $file->setMapper(new MogileFS_File_Mapper()));
 		$this->assertInstanceOf('MogileFS_File', $file->setPaths(array('http://mypath.com/123.fid')));
 		$this->assertInstanceOf('MogileFS_File', $file->setSize(321));
+		$this->assertInstanceOf('MogileFS_File', $file->setMd5('d41d8cd98f00b204e9800998ecf8427e'));
 
 		$this->assertEquals('dev', $file->getClass());
 		$this->assertEquals('toast', $file->getDomain());
@@ -40,6 +41,7 @@ class FileTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(new MogileFS_File_Mapper(), $file->getMapper());
 		$this->assertEquals(array('http://mypath.com/123.fid'), $file->getPaths());
 		$this->assertEquals(321, $file->getSize());
+		$this->assertEquals('d41d8cd98f00b204e9800998ecf8427e', $file->getMd5());
 	}
 
 	public function testIsValid()
@@ -56,7 +58,7 @@ class FileTest extends PHPUnit_Framework_TestCase
 	public function testToAndFromArray()
 	{
 		$fileArray = array('class' => 'default', 'domain' => 'toast', 'fid' => 123, 'file' => $this->getTestFile(),
-				'key' => 'key', 'paths' => array('http://mypath.com/123.fid'), 'size' => 321
+				'key' => 'key', 'paths' => array('http://mypath.com/123.fid'), 'size' => 321, 'md5' => 'd41d8cd98f00b204e9800998ecf8427e',
 		);
 		$file = new MogileFS_File($fileArray);
 		$this->assertEquals($fileArray, $file->toArray());

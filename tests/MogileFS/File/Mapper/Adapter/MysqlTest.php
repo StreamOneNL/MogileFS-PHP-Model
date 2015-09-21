@@ -39,9 +39,9 @@ class MysqlAdapterTest extends PHPUnit_Framework_TestCase
 	{
 		// Setup
 		$key1 = 'testFile1';
-		$file1 = $this->_trackerAdapter->saveFile($key1, $this->_configFile);
+		$file1 = $this->_trackerAdapter->saveFile($key1, $this->_configFile, md5_file($this->_configFile));
 		$key2 = 'testFile2';
-		$file2 = $this->_trackerAdapter->saveFile($key2, $this->_configFile);
+		$file2 = $this->_trackerAdapter->saveFile($key2, $this->_configFile, md5_file($this->_configFile));
 
 		// Test
 		$files = $this->_mysqlAdapter->fetchAllPaths(array($key1, $key2));

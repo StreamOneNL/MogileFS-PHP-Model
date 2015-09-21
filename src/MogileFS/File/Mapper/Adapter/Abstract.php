@@ -71,8 +71,9 @@ abstract class MogileFS_File_Mapper_Adapter_Abstract
 	 * Saves file to MogileFS
 	 * @param string $key
 	 * @param string $file
+	 * @param string $md5
 	 */
-	abstract function saveFile($key, $file, $class = null);
+	abstract function saveFile($key, $file, $md5 = null, $class = null);
 
 	/**
 	 * 

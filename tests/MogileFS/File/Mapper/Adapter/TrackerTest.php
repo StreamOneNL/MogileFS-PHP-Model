@@ -33,7 +33,7 @@ class TrackerTest extends PHPUnit_Framework_TestCase
 	public function testSaveAndDelete()
 	{
 		$key = 'testFile';
-		$result = $this->_tracker->saveFile($key, $this->_configFile, 'dev');
+		$result = $this->_tracker->saveFile($key, $this->_configFile, md5_file($this->_configFile), 'dev');
 		$this->assertArrayHasKey('paths', $result);
 		$this->assertArrayHasKey('fid', $result);
 		$this->assertArrayHasKey('key', $result);
@@ -46,11 +46,12 @@ class TrackerTest extends PHPUnit_Framework_TestCase
 	public function testFindInfo()
 	{
 		$key = 'testFile';
-		$this->_tracker->saveFile($key, $this->_configFile);
+		$this->_tracker->saveFile($key, $this->_configFile, md5_file($this->_configFile));
 		$info = $this->_tracker->findInfo($key);
 		$this->assertArrayHasKey('fid', $info);
 		$this->assertArrayHasKey('class', $info);
 		$this->assertArrayHasKey('size', $info);
+		$this->assertArrayHasKey('md5', $info);
 		$this->assertEquals('default', $info['class']);
 		$this->assertEquals(filesize($this->_configFile), $info['size']);
 		$this->_tracker->delete($key);
@@ -62,7 +63,7 @@ class TrackerTest extends PHPUnit_Framework_TestCase
 	{
 		$key = 'testFile';
 		$key2 = 'testFile2';
-		$this->_tracker->saveFile($key, $this->_configFile);
+		$this->_tracker->saveFile($key, $this->_configFile, md5_file($this->_configFile));
 		try {
 			$this->_tracker->rename($key, $key2);
 		} catch (MogileFS_Exception $e) {
@@ -81,9 +82,9 @@ class TrackerTest extends PHPUnit_Framework_TestCase
 	public function testFetchAllPaths()
 	{
 		$key = 'testFile';
-		$this->_tracker->saveFile($key, $this->_configFile);
+		$this->_tracker->saveFile($key, $this->_configFile, md5_file($this->_configFile));
 		$key2 = 'testFile2';
-		$this->_tracker->saveFile($key2, $this->_configFile);
+		$this->_tracker->saveFile($key2, $this->_configFile, md5_file($this->_configFile));
 
 		$pathsArray = $this->_tracker->fetchAllPaths(array($key, $key2));
 		$this->_tracker->delete($key);
@@ -119,7 +120,7 @@ class TrackerTest extends PHPUnit_Framework_TestCase
 		$keys = array('MyTestKey2', 'MyTestKey1', 'MyTestKey3', 'N2', 'N1');
 		foreach ($keys as $key) {
 			$file = $this->_createTempFile();
-			$adapter->saveFile($key, $file);
+			$adapter->saveFile($key, $file, md5_file($file));
 		}
 
 		$this->assertEquals(array('MyTestKey1', 'MyTestKey2', 'MyTestKey3'), $adapter->listKeys('My'));

@@ -69,6 +69,10 @@ class MogileFS_File_Mapper_Adapter_Tracker extends MogileFS_File_Mapper_Adapter_
 			return null;
 		}
 
+		if (isset($info['checksum']) && substr($info['checksum'], 0, 4) === 'MD5:') {
+			$info['md5'] = substr($info['checksum'], 4);
+		}
+
 		// Format into expected format
 		if (isset($info['length'])) {
 			$info['size'] = $info['length'];
@@ -151,7 +155,7 @@ class MogileFS_File_Mapper_Adapter_Tracker extends MogileFS_File_Mapper_Adapter_
 	 * (non-PHPdoc)
 	 * @see MogileFS_File_Mapper_Adapter_Abstract::saveFile()
 	 */
-	public function saveFile($key, $file, $class = null)
+	public function saveFile($key, $file, $md5 = null, $class = null)
 	{
 		if (!is_string($key) || empty($key)) {
 			throw new MogileFS_Exception(
@@ -184,6 +188,19 @@ class MogileFS_File_Mapper_Adapter_Tracker extends MogileFS_File_Mapper_Adapter_
 
 		$requestTimeout = isset($options['request_timeout']) ? $options['request_timeout'] : null;
 
+		$encoded_md5 = null;
+
+		if ($md5 !== null)
+		{
+			$binary_md5 = @hex2bin($md5);
+			if ($binary_md5 === false || strlen($binary_md5) !== 16)
+			{
+				throw new MogileFS_Exception(__METHOD__ . " invalid MD5: " . $md5, MogileFS_Exception::CHECKSUM_ERROR);
+			}
+
+			$encoded_md5 = base64_encode($binary_md5);
+		}
+
 		$ch = curl_init();
 		// 		curl_setopt($ch, CURLOPT_VERBOSE, true);
 		curl_setopt($ch, CURLOPT_INFILE, $fh);
@@ -193,7 +210,19 @@ class MogileFS_File_Mapper_Adapter_Tracker extends MogileFS_File_Mapper_Adapter_
 		curl_setopt($ch, CURLOPT_URL, $uri);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1); // Don't use cached socket
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Get HTML return data
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect: ')); // Remove default curl header
+		if ($encoded_md5 === null)
+		{
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+				'Expect: '
+			)); // Set expect header to speed up process
+		}
+		else
+		{
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+				'Expect: ',
+				'Content-MD5: ' . $encoded_md5,
+			)); // Set MD5 and expect header
+		}
 		$response = curl_exec($ch);
 
 		fclose($fh);
@@ -206,14 +235,25 @@ class MogileFS_File_Mapper_Adapter_Tracker extends MogileFS_File_Mapper_Adapter_
 		}
 
 		if (200 != $statusCode && 201 != $statusCode) {
-			throw new MogileFS_Exception(
+			if (400 == $statusCode && preg_match('/(Content-MD5 mismatch, expected: .* actual: .*)/', $response, $matches)) {
+				throw new MogileFS_Exception(
+					__METHOD__ . ' PUT to \'' . $uri . '\' failed. ' . $matches[1], MogileFS_Exception::CHECKSUM_ERROR);
+			} else {
+				throw new MogileFS_Exception(
 					__METHOD__ . ' PUT to \'' . $uri . '\' failed. Expected status code 200 or 201, got: '
-							. $statusCode . ', and body: ' . $response, MogileFS_Exception::SERVER_ERROR);
+						. $statusCode . ', and body: ' . $response, MogileFS_Exception::SERVER_ERROR);
+			}
 		}
 
 		$params = array('key' => $key, 'devid' => $location['devid'], 'fid' => $location['fid'],
 				'path' => urldecode($uri)
 		);
+
+		if ($md5 !== null)
+		{
+			$params['checksum'] = 'MD5:' . $md5;
+		}
+
 		$result = $this->_sendRequest('CREATE_CLOSE', $params, false);
 		$paths = $this->findPaths($key);
 		if (null === $paths) {

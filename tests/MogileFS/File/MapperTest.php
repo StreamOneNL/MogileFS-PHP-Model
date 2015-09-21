@@ -19,7 +19,7 @@ class MapperTest extends PHPUnit_Framework_TestCase
 		$config = include $configFile;
 		$this->_testMapper = new MogileFS_File_Mapper(array('adapter' => $config['tracker']));
 
-		$this->_testFile = new MogileFS_File(array('key' => $this->_key, 'file' => '/etc/motd'));
+		$this->_testFile = new MogileFS_File(array('key' => $this->_key, 'file' => '/etc/motd', 'md5' => md5_file('/etc/motd')));
 
 		parent::setUp();
 	}
@@ -71,6 +71,7 @@ class MapperTest extends PHPUnit_Framework_TestCase
 		$this->assertNotNull($savedFile->getClass(true));
 		$this->assertNotNull($savedFile->getDomain(true));
 		$this->assertNotNull($savedFile->getSize(true));
+		$this->assertNotNull($savedFile->getMd5(true));
 	}
 
 	public function testFetchFile()
