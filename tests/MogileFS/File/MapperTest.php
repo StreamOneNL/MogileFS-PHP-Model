@@ -76,10 +76,11 @@ class MapperTest extends PHPUnit_Framework_TestCase
 
 	public function testFetchFile()
 	{
-		$this->_testFile->setPaths(array('http://www.test.com'));
-
-		$mapper = new MogileFS_File_Mapper();
+		$configFile = realpath(dirname(__FILE__) . '/../config.php');
+		$config = include $configFile;
+		$mapper = new MogileFS_File_Mapper(array('adapter' => $config['tracker']));
 		$this->_testFile->setMapper($mapper);
+		$savedFile = $mapper->save($this->_testFile);
 		$this->assertFileExists($this->_testFile->getFile(true));
 		$this->assertGreaterThan(0, filesize($this->_testFile->getFile()));
 	}
