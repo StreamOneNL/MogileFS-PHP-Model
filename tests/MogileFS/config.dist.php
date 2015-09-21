@@ -15,7 +15,7 @@ $adapters = array(
 		'domain' => 's1domain',
 		'pdo_options' => 'host=localhost;port=3306;dbname=mogilefs',
 		'username' => 'mogile',
-		'password' => 'THISISASECRET',
+		'password' => 'ENTER_MYSQL_PASSWORD_HERE',
 	),
 );
 
